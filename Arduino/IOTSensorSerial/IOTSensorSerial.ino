@@ -34,6 +34,8 @@ void loop() {
   // read the sensor
   IMU.readSensor();
 
+  /*
+
   //Bei Fehlern könnte ein check von Serial.availableForWrite() helfen
   
   // Send Accel X to Serial (Key: G)
@@ -78,28 +80,29 @@ void loop() {
   //Send Key Released Event (Key: Q)
   //TODO
 
+  */
 
-  //Serial.print((long)(IMU.getAccelX_mss()*1000000), HEX);
+  //Serial.print(IMU.getAccelX_mss(),6);
   //Serial.print("\t");
-  //Serial.print(IMU.getAccelY_mss());
+  //Serial.print(IMU.getAccelY_mss(),6);
   //Serial.print("\t");
-  //Serial.println(IMU.getAccelZ_mss());
-//  Serial.print("\t");
-//  Serial.print(IMU.getGyroX_rads(),6);
-//  Serial.print("\t");
-//  Serial.print(IMU.getGyroY_rads(),6);
-//  Serial.print("\t");
-//  Serial.println(IMU.getGyroZ_rads(),6);
-//  Serial.print("\t");
-//  Serial.print(IMU.getMagX_uT(),6);
-//  Serial.print("\t");
-//  Serial.print(IMU.getMagY_uT(),6);
-//  Serial.print("\t");
-//  Serial.println(IMU.getMagZ_uT(),6);
-//  Serial.print("\t");
-//  Serial.println(IMU.getTemperature_C(),6);
+  //Serial.println(IMU.getAccelZ_mss(),6);
+  //Serial.print("\t");
+  //Serial.print(IMU.getGyroX_rads(),6);
+  //Serial.print("\t");
+  //Serial.print(IMU.getGyroY_rads(),6);
+  //Serial.print("\t");
+  //Serial.println(IMU.getGyroZ_rads(),6);
+  //Serial.print("\t");
+  Serial.print(IMU.getMagX_uT(),6);
+  Serial.print("\t");
+  Serial.print(IMU.getMagY_uT(),6);
+  Serial.print("\t");
+  Serial.println(IMU.getMagZ_uT(),6);
+  //Serial.print("\t");
+  //Serial.println(IMU.getTemperature_C(),6);
   
-  delay(50);
+  //delay();
 }
 
 void printhex(float f)
