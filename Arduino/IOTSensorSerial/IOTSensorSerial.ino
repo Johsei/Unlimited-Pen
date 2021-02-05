@@ -20,8 +20,6 @@ void setup() {
 
   // start communication with IMU 
   status = IMU.begin();
-  Serial.print("status = ");
-  Serial.println(status);
   /*Serial.print("status = ");
   Serial.println(status);
   if (status < 0) {
