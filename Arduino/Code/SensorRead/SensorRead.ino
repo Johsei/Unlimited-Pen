@@ -11,6 +11,7 @@
  * Distributed as-is; no warranty is given.
  ***************************************************************/
 #include "ICM_20948.h"  // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20948_IMU
+#include <math.h>
 
 #define SERIAL_PORT Serial
 
@@ -20,6 +21,8 @@
                         // the ADR jumper is closed the value becomes 0
 
 ICM_20948_I2C myICM;  // create an ICM_20948_I2C object
+
+float acc[3], mag[3];
 
 void setup() {
 
@@ -34,8 +37,8 @@ void setup() {
 
     myICM.begin( WIRE_PORT, AD0_VAL );
 
-    SERIAL_PORT.print( F("Initialization of the sensor returned: ") );
-    SERIAL_PORT.println( myICM.statusString() );
+    // SERIAL_PORT.print( F("Initialization of the sensor returned: ") );
+    // SERIAL_PORT.println( myICM.statusString() );
     
     if( myICM.status != ICM_20948_Stat_Ok ){
       SERIAL_PORT.println( "Trying again..." );
@@ -49,16 +52,60 @@ void setup() {
 void loop() {
 
   if( myICM.dataReady() ){
-    myICM.getAGMT();                // The values are only updated when you call 'getAGMT'
-    //printRawAGMT( myICM.agmt );     // Uncomment this to see the raw values, taken directly from the agmt structure
-    //printScaledAGMT( myICM.agmt);   // This function takes into account the sclae settings from when the measurement was made to calculate the values with units
+
+    // Neue Daten abholen
+    myICM.getAGMT();
+
+    // Vektoren von Beschleunigung und Magnetfeld fuellen
+    acc[0] = myICM.accX();
+    acc[1] = myICM.accY();
+    acc[2] = myICM.accZ();
+
+    mag[0] = myICM.magX();
+    mag[1] = myICM.magY();
+    mag[2] = myICM.magZ();
+
+    SERIAL_PORT.print("accX:");
+    SERIAL_PORT.print(acc[0],6);
+    SERIAL_PORT.print("\t\t");
+    SERIAL_PORT.print("accY:");
+    SERIAL_PORT.print(acc[1],6);
+    SERIAL_PORT.print("\t\t");
+    SERIAL_PORT.print("accZ:");
+    SERIAL_PORT.print(acc[2],6);
+    SERIAL_PORT.print("\t\t");
+    SERIAL_PORT.print("magX:");
+    SERIAL_PORT.print(mag[0],6);
+    SERIAL_PORT.print("\t\t");
+    SERIAL_PORT.print("magY:");
+    SERIAL_PORT.print(mag[1],6);
+    SERIAL_PORT.print("\t\t");
+    SERIAL_PORT.print("magZ:");
+    SERIAL_PORT.print(mag[2],6);
+
+    SERIAL_PORT.print("\t\t");
+    SERIAL_PORT.print("accGes:");
+    SERIAL_PORT.print(vectorsum(acc),6);
+    SERIAL_PORT.print("\t\t");
+    SERIAL_PORT.print("magGes:");
+    SERIAL_PORT.println(vectorsum(mag),6);
 
     
-    SERIAL_PORT.print(myICM.accX(),6);
-    SERIAL_PORT.print("\t");
-    SERIAL_PORT.print(myICM.accY(),6);
-    SERIAL_PORT.print("\t");
-    SERIAL_PORT.println(myICM.accZ(),6);
+
+
+    
+//    SERIAL_PORT.print(myICM.accX(),6);
+//    SERIAL_PORT.print("\t");
+//    SERIAL_PORT.print(myICM.accY(),6);
+//    SERIAL_PORT.print("\t");
+//    SERIAL_PORT.print(myICM.accZ(),6);
+//    SERIAL_PORT.print("\t");
+
+//    SERIAL_PORT.print(myICM.magX(),6);
+//    SERIAL_PORT.print("\t");
+//    SERIAL_PORT.print(myICM.magY(),6);
+//    SERIAL_PORT.print("\t");
+//    SERIAL_PORT.println(myICM.magZ(),6);
     
 
     // Send Accel X to Serial (Key: G)
@@ -121,8 +168,14 @@ void printhex(float f)
   SERIAL_PORT.print(floatString);
 }
 
+float vectorsum(float vector[])
+{
+  return sqrt(vector[0]*vector[0]+vector[1]*vector[1]+vector[2]*vector[2]);
+}
 
 
+
+// OLD STUFF
 
 void printFormattedFloat(float val, uint8_t leading, uint8_t decimals){
   float aval = abs(val);
