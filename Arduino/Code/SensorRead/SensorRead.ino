@@ -1,15 +1,3 @@
-/****************************************************************
- * Example1_Basics.ino
- * ICM 20948 Arduino Library Demo 
- * Use the default configuration to stream 9-axis IMU data
- * Owen Lyke @ SparkFun Electronics
- * Original Creation Date: April 17 2019
- * 
- * This code is beerware; if you see me (or any other SparkFun employee) at the
- * local, and you've found our code helpful, please buy us a round!
- * 
- * Distributed as-is; no warranty is given.
- ***************************************************************/
 #include "ICM_20948.h"  // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20948_IMU
 #include <math.h>
 
@@ -21,8 +9,6 @@
                         // the ADR jumper is closed the value becomes 0
 
 ICM_20948_I2C myICM;  // create an ICM_20948_I2C object
-
-float acc[3], mag[3];
 
 void setup() {
 
@@ -47,74 +33,115 @@ void setup() {
     initialized = true;
     }
   }
+
+  // In this advanced example we'll cover how to do a more fine-grained setup of your sensor
+  SERIAL_PORT.println("Device connected!");
+
+  // Here we are doing a SW reset to make sure the device starts in a known state
+  myICM.swReset( );
+  if( myICM.status != ICM_20948_Stat_Ok){
+    SERIAL_PORT.print(F("Software Reset returned: "));
+    SERIAL_PORT.println(myICM.statusString());
+  }
+  delay(250);
+  
+  // Now wake the sensor up
+  myICM.sleep( false );
+  myICM.lowPower( false );
+
+  // The next few configuration functions accept a bit-mask of sensors for which the settings should be applied.
+
+  // Set Gyro and Accelerometer to a particular sample mode
+  // options: ICM_20948_Sample_Mode_Continuous
+  //          ICM_20948_Sample_Mode_Cycled
+  myICM.setSampleMode( (ICM_20948_Internal_Acc | ICM_20948_Internal_Gyr), ICM_20948_Sample_Mode_Continuous ); 
+  if( myICM.status != ICM_20948_Stat_Ok){
+    SERIAL_PORT.print(F("setSampleMode returned: "));
+    SERIAL_PORT.println(myICM.statusString());
+  }
+
+  // Set full scale ranges for both acc and gyr
+  ICM_20948_fss_t myFSS;  // This uses a "Full Scale Settings" structure that can contain values for all configurable sensors
+  
+  myFSS.a = gpm2;         // (ICM_20948_ACCEL_CONFIG_FS_SEL_e)
+                          // gpm2
+                          // gpm4
+                          // gpm8
+                          // gpm16
+                          
+  myFSS.g = dps250;       // (ICM_20948_GYRO_CONFIG_1_FS_SEL_e)
+                          // dps250
+                          // dps500
+                          // dps1000
+                          // dps2000
+                          
+  myICM.setFullScale( (ICM_20948_Internal_Acc | ICM_20948_Internal_Gyr), myFSS );  
+  if( myICM.status != ICM_20948_Stat_Ok){
+    SERIAL_PORT.print(F("setFullScale returned: "));
+    SERIAL_PORT.println(myICM.statusString());
+  }
+
+
+  // Set up Digital Low-Pass Filter configuration
+  ICM_20948_dlpcfg_t myDLPcfg;            // Similar to FSS, this uses a configuration structure for the desired sensors
+  myDLPcfg.a = acc_d473bw_n499bw;         // (ICM_20948_ACCEL_CONFIG_DLPCFG_e)
+                                          // acc_d246bw_n265bw      - means 3db bandwidth is 246 hz and nyquist bandwidth is 265 hz
+                                          // acc_d111bw4_n136bw
+                                          // acc_d50bw4_n68bw8
+                                          // acc_d23bw9_n34bw4
+                                          // acc_d11bw5_n17bw
+                                          // acc_d5bw7_n8bw3        - means 3 db bandwidth is 5.7 hz and nyquist bandwidth is 8.3 hz
+                                          // acc_d473bw_n499bw
+
+  myDLPcfg.g = gyr_d361bw4_n376bw5;       // (ICM_20948_GYRO_CONFIG_1_DLPCFG_e)
+                                          // gyr_d196bw6_n229bw8
+                                          // gyr_d151bw8_n187bw6
+                                          // gyr_d119bw5_n154bw3
+                                          // gyr_d51bw2_n73bw3
+                                          // gyr_d23bw9_n35bw9
+                                          // gyr_d11bw6_n17bw8
+                                          // gyr_d5bw7_n8bw9
+                                          // gyr_d361bw4_n376bw5
+                                          
+  myICM.setDLPFcfg( (ICM_20948_Internal_Acc | ICM_20948_Internal_Gyr), myDLPcfg );
+  if( myICM.status != ICM_20948_Stat_Ok){
+    SERIAL_PORT.print(F("setDLPcfg returned: "));
+    SERIAL_PORT.println(myICM.statusString());
+  }
+
+  // Choose whether or not to use DLPF
+  // Here we're also showing another way to access the status values, and that it is OK to supply individual sensor masks to these functions
+  ICM_20948_Status_e accDLPEnableStat = myICM.enableDLPF( ICM_20948_Internal_Acc, false );
+  ICM_20948_Status_e gyrDLPEnableStat = myICM.enableDLPF( ICM_20948_Internal_Gyr, false );
+  SERIAL_PORT.print(F("Enable DLPF for Accelerometer returned: ")); SERIAL_PORT.println(myICM.statusString(accDLPEnableStat));
+  SERIAL_PORT.print(F("Enable DLPF for Gyroscope returned: ")); SERIAL_PORT.println(myICM.statusString(gyrDLPEnableStat));
+
+  SERIAL_PORT.println();  
+  SERIAL_PORT.println(F("Configuration complete!")); 
 }
 
 void loop() {
-
+  
   if( myICM.dataReady() ){
 
     // Neue Daten abholen
     myICM.getAGMT();
 
-    // Vektoren von Beschleunigung und Magnetfeld fuellen
-    acc[0] = myICM.accX();
-    acc[1] = myICM.accY();
-    acc[2] = myICM.accZ();
-
-    mag[0] = myICM.magX();
-    mag[1] = myICM.magY();
-    mag[2] = myICM.magZ();
-
-    SERIAL_PORT.print("accX:");
-    SERIAL_PORT.print(acc[0],6);
-    SERIAL_PORT.print("\t\t");
-    SERIAL_PORT.print("accY:");
-    SERIAL_PORT.print(acc[1],6);
-    SERIAL_PORT.print("\t\t");
-    SERIAL_PORT.print("accZ:");
-    SERIAL_PORT.print(acc[2],6);
-    SERIAL_PORT.print("\t\t");
-    SERIAL_PORT.print("magX:");
-    SERIAL_PORT.print(mag[0],6);
-    SERIAL_PORT.print("\t\t");
-    SERIAL_PORT.print("magY:");
-    SERIAL_PORT.print(mag[1],6);
-    SERIAL_PORT.print("\t\t");
-    SERIAL_PORT.print("magZ:");
-    SERIAL_PORT.print(mag[2],6);
-
-    SERIAL_PORT.print("\t\t");
-    SERIAL_PORT.print("accGes:");
-    SERIAL_PORT.print(vectorsum(acc),6);
-    SERIAL_PORT.print("\t\t");
-    SERIAL_PORT.print("magGes:");
-    SERIAL_PORT.println(vectorsum(mag),6);
-
+    // Beschleunigung ausgeben
     
-
-
-    
+//    SERIAL_PORT.print("accX:");
 //    SERIAL_PORT.print(myICM.accX(),6);
-//    SERIAL_PORT.print("\t");
-//    SERIAL_PORT.print(myICM.accY(),6);
-//    SERIAL_PORT.print("\t");
-//    SERIAL_PORT.print(myICM.accZ(),6);
-//    SERIAL_PORT.print("\t");
+//    SERIAL_PORT.print("\t\t");
+//    SERIAL_PORT.print("accY:");
+//    SERIAL_PORT.println(myICM.accY(),6);
 
-//    SERIAL_PORT.print(myICM.magX(),6);
-//    SERIAL_PORT.print("\t");
-//    SERIAL_PORT.print(myICM.magY(),6);
-//    SERIAL_PORT.print("\t");
-//    SERIAL_PORT.println(myICM.magZ(),6);
-    
+    //Send Accel X to Serial
+    Serial.print("X");
+    printhex(myICM.accX());
 
-    // Send Accel X to Serial (Key: G)
-    //Serial.print("G");
-    //printhex(myICM.accX());
-
-    // Send Accel Y to Serial (Key: H)
-    //Serial.print("H");
-    //printhex(myICM.accY());
+    //Send Accel Y to Serial
+    Serial.print("Y");
+    printhex(myICM.accY());
 
     // Send Accel Z to Serial (Key: I)
     //Serial.print("I");
@@ -157,7 +184,7 @@ void loop() {
 void printhex(float f)
 {
   //Cool fürs Verständnis von Floats: https://www.h-schmidt.net/FloatConverter/IEEE754.html
-  //Im folgenden wird aus der vom Sensor ausgegebenen Float eine HEX gemacht, die dann effizient ausgegeben werden kann
+  //Im folgenden wird die vom Sensor ausgegebene 4-byte-Float in eine 8-stellige HEX umgewandelt, die dann effizient ausgegeben werden kann
   
   char floatString[9]; //Zwischenspeicher, enthält die float als Hex-String
   unsigned char *chpt; //Pointer, der auf die float zeigt, um sie als Hex mit sprintf einzulesen
@@ -166,11 +193,6 @@ void printhex(float f)
   sprintf(floatString, "%02X%02X%02x%02x", chpt[3], chpt[2], chpt[1], chpt[0]);
   floatString[8] = '\0';
   SERIAL_PORT.print(floatString);
-}
-
-float vectorsum(float vector[])
-{
-  return sqrt(vector[0]*vector[0]+vector[1]*vector[1]+vector[2]*vector[2]);
 }
 
 
