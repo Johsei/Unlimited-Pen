@@ -1,6 +1,3 @@
-// Test.cpp : Diese Datei enthält die Funktion "main". Hier beginnt und endet die Ausführung des Programms.
-//
-
 #include "pch.h"
 #include "Windows.h"
 #include <CommCtrl.h>
@@ -14,7 +11,7 @@ short Horizontal[20] = { 2, 3, 4, -2, -1, 3, 5, 0, 2, -1, 3,
 short Vertikal[20] = { 2, -3, 8, -2, -1, 3, 9, 0, 2, -5, 3,
 					2, 3, 4, -2, -1, 2, 5, 0, 2 };
 
-void getData();
+bool getData();
 void Move(short Hori, short Verti, short Sensitivity);
 void LeftClick();
 void RightClick();
@@ -22,17 +19,31 @@ void ShowDesktop();
 
 int main()
 {
+	int i = 0;
 	do
 	{
-		ShowDesktop();
-		for (int i = 0; i < sizeof(Horizontal) / sizeof(short); i++)
+		if (getData())
 		{
-			Move(Horizontal[i], Vertikal[i], 15);
+			Move(Horizontal[i], Vertikal[i], 15); 
 		}
 
 		RightClick();
+		i++;
+
+		if (i > sizeof(Horizontal) / sizeof(short))
+		{
+			i = 0;
+		}
 	} while (true);
 	
+}
+
+bool getData()
+{
+	
+	
+
+	return true;
 }
 
 void Move(short Hori, short Verti, short Sensitivity)
