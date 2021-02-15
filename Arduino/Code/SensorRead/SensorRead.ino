@@ -12,6 +12,8 @@ ICM_20948_I2C myICM;  // create an ICM_20948_I2C object
 
 void setup() {
 
+  pinMode(2,INPUT_PULLUP);
+
   SERIAL_PORT.begin(115200);
   while(!SERIAL_PORT){};
 
@@ -23,8 +25,8 @@ void setup() {
 
     myICM.begin( WIRE_PORT, AD0_VAL );
 
-    // SERIAL_PORT.print( F("Initialization of the sensor returned: ") );
-    // SERIAL_PORT.println( myICM.statusString() );
+     SERIAL_PORT.print( F("Initialization of the sensor returned: ") );
+     SERIAL_PORT.println( myICM.statusString() );
     
     if( myICM.status != ICM_20948_Stat_Ok ){
       SERIAL_PORT.println( "Trying again..." );
@@ -128,7 +130,9 @@ void loop() {
     myICM.getAGMT();
 
     //SERIAL_PORT.println(myICM.accX());
-    sendFloat(myICM.accX());
+    if (digitalRead(2) == LOW) SERIAL_PORT.println("LOL DU DRÜCKST MICH!");
+    //sendFloat(myICM.accX());
+    //sendFloat(0.12);
     //delay(200);
 
    
