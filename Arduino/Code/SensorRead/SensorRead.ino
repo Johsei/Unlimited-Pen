@@ -127,73 +127,26 @@ void loop() {
     // Neue Daten abholen
     myICM.getAGMT();
 
-    // Beschleunigung ausgeben
-    
-//    SERIAL_PORT.print("accX:");
-//    SERIAL_PORT.print(myICM.accX(),6);
-//    SERIAL_PORT.print("\t\t");
-//    SERIAL_PORT.print("accY:");
-//    SERIAL_PORT.println(myICM.accY(),6);
+    //SERIAL_PORT.println(myICM.accX());
+    sendFloat(myICM.accX());
+    //delay(200);
 
-    //Send Accel X to Serial
-    Serial.print("X");
-    printhex(myICM.accX());
-
-    //Send Accel Y to Serial
-    Serial.print("Y");
-    printhex(myICM.accY());
-
-    // Send Accel Z to Serial (Key: I)
-    //Serial.print("I");
-    //printhex(myICM.accZ());
-
-    // Send Accel X to Serial (Key: J)
-    //Serial.print("J");
-    //printhex(IMU.getAccelX_mss());
-  
-    // Send Accel X to Serial (Key: K)
-    //Serial.print("K");
-    //printhex(IMU.getAccelX_mss());
-
-    // Send Accel X to Serial (Key: L)
-    //Serial.print("L");
-    //printhex(IMU.getAccelX_mss());
-  
-    // Send Accel X to Serial (Key: M)
-    //Serial.print("M");
-    //printhex(IMU.getAccelX_mss());
-  
-    // Send Accel X to Serial (Key: N)
-    //Serial.print("N");
-    //printhex(IMU.getAccelX_mss());
-  
-    // Send Accel X to Serial (Key: O)
-    //Serial.print("O");
-    //printhex(IMU.getAccelX_mss());
-  
-    //Send Key Pressed Event (Key: P)
-    //TODO
-  
-    //Send Key Released Event (Key: Q)
-    //TODO
-    
-    //delay(20);
+   
   }
 }
 
-void printhex(float f)
-{
-  //Cool fürs Verständnis von Floats: https://www.h-schmidt.net/FloatConverter/IEEE754.html
-  //Im folgenden wird die vom Sensor ausgegebene 4-byte-Float in eine 8-stellige HEX umgewandelt, die dann effizient ausgegeben werden kann
-  
-  char floatString[9]; //Zwischenspeicher, enthält die float als Hex-String
-  unsigned char *chpt; //Pointer, der auf die float zeigt, um sie als Hex mit sprintf einzulesen
-  
-  chpt = (unsigned char *)&f;
-  sprintf(floatString, "%02X%02X%02x%02x", chpt[3], chpt[2], chpt[1], chpt[0]);
-  floatString[8] = '\0';
-  SERIAL_PORT.print(floatString);
+void sendFloat(float f){
+  byte * b = (byte *) &f;
+  Serial.print("f:");
+  Serial.write(b[0]);
+  Serial.write(b[1]);
+  Serial.write(b[2]);
+  Serial.write(b[3]);
+  Serial.println(); //Send nonsense.. Else serial drops offline??
+  Serial.flush();
+  return;
 }
+
 
 
 
