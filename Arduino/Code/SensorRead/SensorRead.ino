@@ -129,9 +129,10 @@ void loop() {
     // Neue Daten abholen
     myICM.getAGMT();
 
-    //SERIAL_PORT.println(myICM.accX());
-    if (digitalRead(2) == LOW) SERIAL_PORT.println("LOL DU DRÜCKST MICH!");
-    //sendFloat(myICM.accX());
+    SERIAL_PORT.println(myICM.accY());
+    SERIAL_PORT.println(myICM.accZ());
+    //if (digitalRead(2) == LOW) SERIAL_PORT.println("W"); // Taste gedrueckt
+    ////sendFloat(myICM.accZ(), 'Z');
     //sendFloat(0.12);
     //delay(200);
 
@@ -139,9 +140,10 @@ void loop() {
   }
 }
 
-void sendFloat(float f){
+void sendFloat(float f, char key){
   byte * b = (byte *) &f;
-  Serial.print("f:");
+  Serial.print(key);
+  Serial.print(":");
   Serial.write(b[0]);
   Serial.write(b[1]);
   Serial.write(b[2]);

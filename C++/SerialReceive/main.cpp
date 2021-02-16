@@ -12,12 +12,13 @@
 
 using namespace std;
 
-float HexStringToFloat(const char *s);
+float ReadSerialData (Serial* SP, char Key, char *inByte);
 
 // application reads from the specified serial port and reports the collected data
 int _tmain(int argc, _TCHAR* argv[])
 {
 	Serial* SP = new Serial("\\\\.\\COM4");    // adjust as needed
+	boolean btnPressed = false;
 
 	if (SP->IsConnected())
 	{
@@ -27,75 +28,43 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	while(SP->IsConnected())
 	{
-
-		/*
-        if (SP->ReadData(incomingData,1)) // Wenn ein Zeichen eingelesen wurde gibt das 1 zurueck
-		//cout << "read " << incomingData[0] << endl;
-		{
-			if (incomingData[0] == 'X')
-			{
-				//cout << "X ERKANNT!!!!!!!!!" << endl;
-				while (NextFloat == false)
-				if (SP->ReadData(incomingData,1) == 1) //Nur wenn wirklich 8 Zeichen eingelesen wurden, ist eine richtige Zahl angekommen
-				{
-
-					//cout << endl << "Received HEX: " << incomingData[0] << incomingData[1] << incomingData[2] << incomingData[3] << incomingData[4] << incomingData[5] << incomingData[6] << incomingData[7] << endl;
-					//incomingData[10] = 0;
-
-					//unsigned char val[8];
-					//for (int i = 0; i < 8; i++) val[i] = incomingData[i];
-					//float x = *(float*)val; 
-
-					int result;
-					result = strtol (incomingData,NULL,2);
-
-					//float result = *reinterpret_cast<float*>(&incomingData[0]);
-   					
-
-					//l = strtol(&incomingData[0], (char**)NULL, 16);
-					//f = (float)l;
-					
-					cout << "Received: " << incomingData[0] << incomingData[1] << incomingData[2] << incomingData[3] << incomingData[4] << " Int: " << result << endl;
-				}
-			}
-			else if (incomingData[0] == 'Y')
-			{
-				
-
-			}
-		}
-		*/
-
 		char inByte;
 		SP->ReadData(&inByte,1);
-		if (inByte == 'f')
+		if (inByte == 'W') // Button gedrueckt
 		{
-			SP->ReadData(&inByte,1);  //Dispose of ":"
-			char indata[4] = { 0 };
-			SP->ReadData(&indata[0],1);
-			SP->ReadData(&indata[1],1);
-			SP->ReadData(&indata[2],1);
-			SP->ReadData(&indata[3],1);
-
-			float g;
-			memcpy(&g, &indata, sizeof(g));
-			cout << "Received Float: " << g << endl;
+			btnPressed = true; // Entweder zu Beginn einer Datenübertragung kommt ein W (gedrueckt) oder nicht (nicht gedrueckt), zuruecksetzen erfolgt nach Einlesen von Z Daten, moegliche Fehlerquelle!
 		}
+		else if (inByte == 'Y')
+		{
+			cout << "Received Y: " << ReadSerialData(SP, 'Y', &inByte) << endl;
+			if (btnPressed == true) cout << "MAUSTASTE GEDRUECKT!" << endl;
+			// TODO Mausbewegung, Zahlenkontrolle
+		}
+		else if (inByte == 'Z')
+		{
+			cout << "Received Z: " << ReadSerialData(SP, 'Z', &inByte) << endl;
+			// TODO Mausbewegung, Zahlenkontrolle
 
-
-			
-		//cout << endl << "String: " << *str << endl;
-
-		// for (int i = 0; i < strlen(incomingData); i++)
-		// {
-		// 	cout << "Char on place " << i << ": " << incomingData[i] << endl;
-		// }
-		// cout <<     "________________" << endl;
-
-		
-
-
+			btnPressed = false; // Wird hier wieder zurueckgesetzt, da das das letzte einzulesende Datenpaket dieser Uebertragung ist
+		}
 	}
 	return 0;
+}
+
+float ReadSerialData (Serial* SP, char Key, char *inByte)
+{
+	SP->ReadData(inByte,1);  //":" entsorgen
+	char indata[4] = { 0 };
+	SP->ReadData(&indata[0],1);
+	SP->ReadData(&indata[1],1);
+	SP->ReadData(&indata[2],1);
+	SP->ReadData(&indata[3],1);
+
+	float g;
+	memcpy(&g, &indata, sizeof(g));
+
+	//if (g != 0 && g < 99999 && g > -99999) cout << "Received Float: " << g << endl; // Ungültige Werte verwerfen!
+
+	return g;
 }
 
