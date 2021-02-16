@@ -129,11 +129,11 @@ void loop() {
     // Neue Daten abholen
     myICM.getAGMT();
 
-    //SERIAL_PORT.println(myICM.accY());
-    //SERIAL_PORT.println(myICM.accZ());
+    //SERIAL_PORT.println(myICM.accX());
     if (digitalRead(2) == LOW) SERIAL_PORT.println("W"); // Taste gedrueckt
+    sendFloat(myICM.accY(), 'Y'); 
     sendFloat(myICM.accZ(), 'Z');
-    sendFloat(0.12);
+    //sendFloat(0.12);
     //delay(200);
 
    
