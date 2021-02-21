@@ -1,6 +1,8 @@
 #include "ICM_20948.h"  // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20948_IMU
 #include <math.h>
 
+#define debug false // Debug activation - measures time delay between read operations
+
 #define SERIAL_PORT Serial
 
 #define WIRE_PORT Wire  // Your desired Wire port.
@@ -10,8 +12,11 @@
 
 ICM_20948_I2C myICM;  // create an ICM_20948_I2C object
 
-void setup() {
+long millisCount, counter;
 
+void setup() {
+  millisCount = 0;
+  counter = 0;
   pinMode(2,INPUT_PULLUP);
 
   SERIAL_PORT.begin(115200);
@@ -123,13 +128,24 @@ void setup() {
 }
 
 void loop() {
-  
+
   if( myICM.dataReady() ){
 
     // Neue Daten abholen
     myICM.getAGMT();
 
-    //SERIAL_PORT.println(myICM.accX());
+    // Time debug
+    counter++;
+    if (counter >= 1000 && debug == true) 
+    {
+      counter = 0;
+      Serial.print("1000 Durchläufe: ");
+      Serial.println(millis() - millisCount);
+      millisCount = millis();
+    }
+
+    //SERIAL_PORT.println(myICM.accY());
+    //SERIAL_PORT.println(myICM.accZ());
     if (digitalRead(2) == LOW) SERIAL_PORT.println("W"); // Taste gedrueckt
     sendFloat(myICM.accY(), 'Y'); 
     sendFloat(myICM.accZ(), 'Z');

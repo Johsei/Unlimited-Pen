@@ -12,6 +12,7 @@
 #include "Windows.h"
 #include <CommCtrl.h>
 #include <iostream>
+#include <chrono>
 
 #define VK_D 0x44;
 
@@ -35,8 +36,14 @@ float ReadSerialData (Serial* SP, char Key, char *inByte);
 // application reads from the specified serial port and reports the collected data
 int _tmain(int argc, _TCHAR* argv[])
 {
+	unsigned __int64 now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count(); // Enables one to read the current time in ms as variable "now"
+
 	Serial* SP = new Serial("\\\\.\\COM4");    // adjust as needed
 	boolean btnPressed = false;
+
+	unsigned __int64 countMillis = 0; // Just for debug purposes
+	int count = 0;
+	countMillis = now;
 
 	if (SP->IsConnected())
 	{
@@ -47,7 +54,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	while(SP->IsConnected())
 	{
 		char inByte;
-		float y, z;
+		float y, z, vy, vz;
+
 		SP->ReadData(&inByte,1);
 		if (inByte == 'W') // Button gedrueckt
 		{
@@ -55,18 +63,35 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 		else if (inByte == 'Y') // +Y: nach links, -Y: nach rechts
 		{
+
+			count++;
+			if (count >= 1000)
+			{
+				count = 0;
+				//countMillis = now - countMillis;
+				now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+				cout << "--------------\nZeit nach 1000 Durchlaeufen: " << now - countMillis << "\n----------------" << endl;
+				countMillis = now;	
+			}
+
 			if (btnPressed == true) cout << "MAUSTASTE GEDRUECKT!" << endl; // Hier why not und so
 
 			y = ReadSerialData(SP, 'Y', &inByte); // Einlesen der vier Datenbytes
 			cout << "Received Y: " << y << endl;
 			
-			if (y > 150 && y < 9999) Move((int)y/100, 0, 1);
-			else if (y < -150 && y > -9999) Move((int)y/100, 0, -1);
+			// Geschwindigkeit auf Grundlage der Beschleunigung anpassen
+			//if ((y > 0 && y < 9999) || (y < 0 && y > -9999)) vy += y; 
+			//cout << "Geschwindigkeit: " << vy << endl;
+
+			//if (y < 150 && y > -150 && y != 0) vy = 0; NOPE sonst wird Gesw bei dv=0 auf 0 gesetzt
+
+			//Move((int)vy/100, 0, 1);
+			
 		}
 		else if (inByte == 'Z') // +Z: nach oben, -Z: nach unten
 		{
 			z = ReadSerialData(SP, 'Z', &inByte); // Einlesen der vier Datenbytes
-			cout << "Received Z: " << z << endl;
+			//cout << "Received Z: " << z << endl;
 
 
 			// TODO Mausbewegung, Zahlenkontrolle
