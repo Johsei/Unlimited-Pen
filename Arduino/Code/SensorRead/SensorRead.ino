@@ -13,10 +13,14 @@
 ICM_20948_I2C myICM;  // create an ICM_20948_I2C object
 
 long millisCount, counter;
+long vx, vy;
+int countNotChanges;
 
 void setup() {
   millisCount = 0;
   counter = 0;
+  vx, vy = 0;
+  
   pinMode(2,INPUT_PULLUP);
 
   SERIAL_PORT.begin(115200);
@@ -144,15 +148,41 @@ void loop() {
       millisCount = millis();
     }
 
-    //SERIAL_PORT.println(myICM.accY());
-    //SERIAL_PORT.println(myICM.accZ());
-    if (digitalRead(2) == LOW) SERIAL_PORT.println("W"); // Taste gedrueckt
-    sendFloat(myICM.accY(), 'Y'); 
-    sendFloat(myICM.accZ(), 'Z');
+
+    if(myICM.accY() > 150 || myICM.accY() < -150) {
+      vx += myICM.accY();
+      countNotChanges = 0;
+    }
+    else {
+      countNotChanges++;
+    }
+    if(myICM.accZ() > 150 || myICM.accZ() < -150) {
+      vy += myICM.accZ();
+      countNotChanges = 0;
+    }
+    else {
+      countNotChanges++;
+    }
+
+    if (countNotChanges >= 200) {
+      vx = 0; 
+      vy = 0;
+    }
+
+    
+//    SERIAL_PORT.print("GeswX: ");
+//    SERIAL_PORT.print(vx);
+//    SERIAL_PORT.print("  GeswY: ");
+//    SERIAL_PORT.println(vy);
+
+    sendFloat((float)vx, 'X');
+    sendFloat((float)vy, 'Y');
+    
+    //if (digitalRead(2) == LOW) SERIAL_PORT.println("W"); // Taste gedrueckt
+    //sendFloat(myICM.accY(), 'Y'); 
+    //sendFloat(myICM.accZ(), 'Z');
     //sendFloat(0.12);
     //delay(200);
-
-   
   }
 }
 

@@ -61,7 +61,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		{
 			btnPressed = true; // Entweder zu Beginn einer Datenübertragung kommt ein W (gedrueckt) oder nicht (nicht gedrueckt), zuruecksetzen erfolgt nach Einlesen von Z Daten, moegliche Fehlerquelle!
 		}
-		else if (inByte == 'Y') // +Y: nach links, -Y: nach rechts
+		else if (inByte == 'X') // OBSOLET: +Y: nach links, -Y: nach rechts
 		{
 
 			count++;
@@ -76,8 +76,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
 			if (btnPressed == true) cout << "MAUSTASTE GEDRUECKT!" << endl; // Hier why not und so
 
-			y = ReadSerialData(SP, 'Y', &inByte); // Einlesen der vier Datenbytes
-			cout << "Received Y: " << y << endl;
+			y = ReadSerialData(SP, 'X', &inByte); // Einlesen der vier Datenbytes
+			cout << "Received X: " << y << endl;
 			
 			// Geschwindigkeit auf Grundlage der Beschleunigung anpassen
 			//if ((y > 0 && y < 9999) || (y < 0 && y > -9999)) vy += y; 
@@ -88,9 +88,9 @@ int _tmain(int argc, _TCHAR* argv[])
 			//Move((int)vy/100, 0, 1);
 			
 		}
-		else if (inByte == 'Z') // +Z: nach oben, -Z: nach unten
+		else if (inByte == 'Y') // OBSOLET: +Z: nach oben, -Z: nach unten
 		{
-			z = ReadSerialData(SP, 'Z', &inByte); // Einlesen der vier Datenbytes
+			z = ReadSerialData(SP, 'Y', &inByte); // Einlesen der vier Datenbytes
 			//cout << "Received Z: " << z << endl;
 
 
