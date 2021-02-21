@@ -175,8 +175,8 @@ void loop() {
 //    SERIAL_PORT.print("  GeswY: ");
 //    SERIAL_PORT.println(vy);
 
-    sendFloat((float)vx, 'X');
-    sendFloat((float)vy, 'Y');
+    sendLong(vx, 'X');
+    sendLong(vy, 'Y');
     
     //if (digitalRead(2) == LOW) SERIAL_PORT.println("W"); // Taste gedrueckt
     //sendFloat(myICM.accY(), 'Y'); 
@@ -186,7 +186,20 @@ void loop() {
   }
 }
 
-void sendFloat(float f, char key){
+void sendFloat(float f, char key){ // Funktioniert nicht gut, da NULL bytes nicht erkannt werden!
+  byte * b = (byte *) &f;
+  Serial.print(key);
+  Serial.print(":");
+  Serial.write(b[0]);
+  Serial.write(b[1]);
+  Serial.write(b[2]);
+  Serial.write(b[3]);
+  Serial.println(); //Send nonsense.. Else serial drops offline??
+  Serial.flush();
+  return;
+}
+
+void sendLong(long f, char key){ // Funktioniert nicht gut, da NULL bytes nicht erkannt werden!
   byte * b = (byte *) &f;
   Serial.print(key);
   Serial.print(":");

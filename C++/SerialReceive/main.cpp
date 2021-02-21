@@ -31,7 +31,8 @@ void LeftClick();
 void RightClick();
 void ShowDesktop();
 
-float ReadSerialData (Serial* SP, char Key, char *inByte);
+float ReadSerialFloat (Serial* SP, char *inByte);
+float ReadSerialLong (Serial* SP, char *inByte); 
 
 // application reads from the specified serial port and reports the collected data
 int _tmain(int argc, _TCHAR* argv[])
@@ -70,13 +71,13 @@ int _tmain(int argc, _TCHAR* argv[])
 				count = 0;
 				//countMillis = now - countMillis;
 				now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-				cout << "--------------\nZeit nach 1000 Durchlaeufen: " << now - countMillis << "\n----------------" << endl;
+				cout << "----------------\nZeit nach 1000 Durchlaeufen: " << now - countMillis << "\n----------------" << endl;
 				countMillis = now;	
 			}
 
 			if (btnPressed == true) cout << "MAUSTASTE GEDRUECKT!" << endl; // Hier why not und so
 
-			y = ReadSerialData(SP, 'X', &inByte); // Einlesen der vier Datenbytes
+			y = ReadSerialLong(SP, &inByte); // Einlesen der vier Datenbytes
 			cout << "Received X: " << y << endl;
 			
 			// Geschwindigkeit auf Grundlage der Beschleunigung anpassen
@@ -90,7 +91,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 		else if (inByte == 'Y') // OBSOLET: +Z: nach oben, -Z: nach unten
 		{
-			z = ReadSerialData(SP, 'Y', &inByte); // Einlesen der vier Datenbytes
+			z = ReadSerialFloat(SP, &inByte); // Einlesen der vier Datenbytes
 			//cout << "Received Z: " << z << endl;
 
 
@@ -102,7 +103,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	return 0;
 }
 
-float ReadSerialData (Serial* SP, char Key, char *inByte)
+float ReadSerialFloat (Serial* SP, char *inByte)
 {
 	SP->ReadData(inByte,1);  //":" entsorgen
 	char indata[4] = { 0 };
@@ -112,6 +113,23 @@ float ReadSerialData (Serial* SP, char Key, char *inByte)
 	SP->ReadData(&indata[3],1);
 
 	float g;
+	memcpy(&g, &indata, sizeof(g));
+
+	//if (g != 0 && g < 99999 && g > -99999) cout << "Received Float: " << g << endl; // Ungültige Werte verwerfen!
+
+	return g;
+}
+
+float ReadSerialLong (Serial* SP, char *inByte)
+{
+	SP->ReadData(inByte,1);  //":" entsorgen
+	char indata[4] = { 0 };
+	if(SP->ReadData(&indata[0],1) == 0) cout << "ERROR: NO BYTE TO READ (NULL)" << endl;
+	SP->ReadData(&indata[1],1);
+	SP->ReadData(&indata[2],1);
+	SP->ReadData(&indata[3],1);
+
+	long g;
 	memcpy(&g, &indata, sizeof(g));
 
 	//if (g != 0 && g < 99999 && g > -99999) cout << "Received Float: " << g << endl; // Ungültige Werte verwerfen!
