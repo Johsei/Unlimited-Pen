@@ -131,6 +131,7 @@ float ReadSerialLong (Serial* SP, char *inByte)
 
 	long g;
 	memcpy(&g, &indata, sizeof(g));
+	g -= 16843009; // Subtrahiert die aufseiten des Arduinos zur Vermeidung von NUL addierte Zahl
 
 	//if (g != 0 && g < 99999 && g > -99999) cout << "Received Float: " << g << endl; // Ungültige Werte verwerfen!
 

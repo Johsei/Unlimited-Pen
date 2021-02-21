@@ -200,6 +200,7 @@ void sendFloat(float f, char key){ // Funktioniert nicht gut, da NULL bytes nich
 }
 
 void sendLong(long f, char key){ // Funktioniert nicht gut, da NULL bytes nicht erkannt werden!
+  f += 16843009; // Addiert quasi 1 zu jedem Byte, damit nicht (NIEMALS! (außer bei -16843009 xD)) NUL übertragen wird (2^0 + 2^8 + 2^16 + 2^24)
   byte * b = (byte *) &f;
   Serial.print(key);
   Serial.print(":");
