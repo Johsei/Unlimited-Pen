@@ -143,8 +143,8 @@ void loop() {
     if (counter >= 1000 && debug == true) 
     {
       counter = 0;
-      Serial.print("1000 Durchläufe: ");
-      Serial.println(millis() - millisCount);
+      SERIAL_PORT.print("1000 Durchläufe: ");
+      SERIAL_PORT.println(millis() - millisCount);
       millisCount = millis();
     }
 
@@ -175,8 +175,8 @@ void loop() {
 //    SERIAL_PORT.print("  GeswY: ");
 //    SERIAL_PORT.println(vy);
 
-    sendLong(vx, 'X');
-    sendLong(vy, 'Y');
+    sendLongAsChars(vx, 'X');
+    sendLongAsChars(vy, 'Y');
     
     //if (digitalRead(2) == LOW) SERIAL_PORT.println("W"); // Taste gedrueckt
     //sendFloat(myICM.accY(), 'Y'); 
@@ -188,28 +188,40 @@ void loop() {
 
 void sendFloat(float f, char key){ // Funktioniert nicht gut, da NULL bytes nicht erkannt werden!
   byte * b = (byte *) &f;
-  Serial.print(key);
-  Serial.print(":");
-  Serial.write(b[0]);
-  Serial.write(b[1]);
-  Serial.write(b[2]);
-  Serial.write(b[3]);
-  Serial.println(); //Send nonsense.. Else serial drops offline??
-  Serial.flush();
+  SERIAL_PORT.print(key);
+  SERIAL_PORT.print(":");
+  SERIAL_PORT.write(b[0]);
+  SERIAL_PORT.write(b[1]);
+  SERIAL_PORT.write(b[2]);
+  SERIAL_PORT.write(b[3]);
+  SERIAL_PORT.println(); //Send nonsense.. Else serial drops offline??
+  SERIAL_PORT.flush();
   return;
 }
 
 void sendLong(long f, char key){ // Funktioniert nicht gut, da NULL bytes nicht erkannt werden!
   f += 16843009; // Addiert quasi 1 zu jedem Byte, damit nicht (NIEMALS! (außer bei -16843009 xD)) NUL übertragen wird (2^0 + 2^8 + 2^16 + 2^24)
   byte * b = (byte *) &f;
-  Serial.print(key);
-  Serial.print(":");
-  Serial.write(b[0]);
-  Serial.write(b[1]);
-  Serial.write(b[2]);
-  Serial.write(b[3]);
-  Serial.println(); //Send nonsense.. Else serial drops offline??
-  Serial.flush();
+  SERIAL_PORT.print(key);
+  SERIAL_PORT.print(":");
+  SERIAL_PORT.write(b[0]);
+  SERIAL_PORT.write(b[1]);
+  SERIAL_PORT.write(b[2]);
+  SERIAL_PORT.write(b[3]);
+  SERIAL_PORT.println(); //Send nonsense.. Else serial drops offline??
+  SERIAL_PORT.flush();
+  return;
+}
+
+void sendLongAsChars(long l, char key){
+  SERIAL_PORT.print(key);
+
+  char longString[11]; //Zwischenspeicher, enthält die long als 10 chars
+  sprintf(longString, "%+0ld", l);
+  longString[10] = '\0';
+  SERIAL_PORT.print(longString);
+  SERIAL_PORT.println();
+  
   return;
 }
 

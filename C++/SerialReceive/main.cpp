@@ -16,6 +16,8 @@
 
 #define VK_D 0x44;
 
+#define debug false
+
 using namespace std;
 
 // Von Kollege Simon übernommen
@@ -33,6 +35,7 @@ void ShowDesktop();
 
 float ReadSerialFloat (Serial* SP, char *inByte);
 float ReadSerialLong (Serial* SP, char *inByte); 
+float ReadSerialLongAsChars (Serial* SP);
 
 // application reads from the specified serial port and reports the collected data
 int _tmain(int argc, _TCHAR* argv[])
@@ -55,7 +58,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	while(SP->IsConnected())
 	{
 		char inByte;
-		float y, z, vy, vz;
+		long x, y;
 
 		SP->ReadData(&inByte,1);
 		if (inByte == 'W') // Button gedrueckt
@@ -66,7 +69,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		{
 
 			count++;
-			if (count >= 1000)
+			if (count >= 1000 && debug == true)
 			{
 				count = 0;
 				//countMillis = now - countMillis;
@@ -77,25 +80,18 @@ int _tmain(int argc, _TCHAR* argv[])
 
 			if (btnPressed == true) cout << "MAUSTASTE GEDRUECKT!" << endl; // Hier why not und so
 
-			y = ReadSerialLong(SP, &inByte); // Einlesen der vier Datenbytes
-			cout << "Received X: " << y << endl;
-			
-			// Geschwindigkeit auf Grundlage der Beschleunigung anpassen
-			//if ((y > 0 && y < 9999) || (y < 0 && y > -9999)) vy += y; 
-			//cout << "Geschwindigkeit: " << vy << endl;
+			x = ReadSerialLongAsChars(SP); // Einlesen der Daten
+			cout << "Received X: " << x << endl;
 
-			//if (y < 150 && y > -150 && y != 0) vy = 0; NOPE sonst wird Gesw bei dv=0 auf 0 gesetzt
-
-			//Move((int)vy/100, 0, 1);
+			Move(x/5000.0, 0, 1);
 			
 		}
 		else if (inByte == 'Y') // OBSOLET: +Z: nach oben, -Z: nach unten
 		{
-			z = ReadSerialFloat(SP, &inByte); // Einlesen der vier Datenbytes
-			//cout << "Received Z: " << z << endl;
+			y = ReadSerialLongAsChars(SP); // Einlesen der Daten
+			cout << "Received Y: " << y << endl;
 
-
-			// TODO Mausbewegung, Zahlenkontrolle
+			Move(0, y/5000.0, 1);
 
 			btnPressed = false; // Wird hier wieder zurueckgesetzt, da das das letzte einzulesende Datenpaket dieser Uebertragung ist
 		}
@@ -136,6 +132,19 @@ float ReadSerialLong (Serial* SP, char *inByte)
 	//if (g != 0 && g < 99999 && g > -99999) cout << "Received Float: " << g << endl; // Ungültige Werte verwerfen!
 
 	return g;
+}
+
+float ReadSerialLongAsChars (Serial* SP)
+{
+	char indata[16] = { 0 }; // Zahl wird immer mit Sign und 10 Stellen ausgegeben
+
+	for (int i = 0; i < 16; ++i) {
+		SP->ReadData(&indata[i],1); // Die Stellen nacheinander in das Char-Array einlesen
+		if(indata[i] == '\n') break; // Wenn die Zahl aus ist raus aus der for-Schleife!
+	}
+
+	long longRead = atol(indata);
+	return longRead;
 }
 
 void Move(short Hori, short Verti, short Sensitivity)
