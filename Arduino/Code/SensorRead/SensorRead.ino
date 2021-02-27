@@ -149,6 +149,7 @@ void loop() {
     }
 
 
+    //Only use Input data to change the speed when its significantly high (>150)
     if(myICM.accY() > 150 || myICM.accY() < -150) {
       vx += myICM.accY();
       countNotChanges = 0;
@@ -164,20 +165,25 @@ void loop() {
       countNotChanges++;
     }
 
+
+    //If the pen is still for a specific amount of time reset the speed
     if (countNotChanges >= 200) {
       vx = 0; 
       vy = 0;
     }
 
-    
-//    SERIAL_PORT.print("GeswX: ");
-//    SERIAL_PORT.print(vx);
-//    SERIAL_PORT.print("  GeswY: ");
-//    SERIAL_PORT.println(vy);
 
+    //Send Data to the PC
     sendLongAsChars(vx, 'X');
     sendLongAsChars(vy, 'Y');
-    
+
+    ////debug
+    //SERIAL_PORT.print("GeswX: ");
+    //SERIAL_PORT.print(vx);
+    //SERIAL_PORT.print("  GeswY: ");
+    //SERIAL_PORT.println(vy);
+
+    ////old
     //if (digitalRead(2) == LOW) SERIAL_PORT.println("W"); // Taste gedrueckt
     //sendFloat(myICM.accY(), 'Y'); 
     //sendFloat(myICM.accZ(), 'Z');
