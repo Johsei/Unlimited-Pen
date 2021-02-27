@@ -13,7 +13,7 @@
 #include <CommCtrl.h>
 #include <iostream>
 #include <chrono>
-//#include "matplotlibcpp.h"
+//#include "matplotlibcpp.h" // Funktionierende Implementierung hat nicht geklappt
 
 #define VK_D 0x44;
 
@@ -66,9 +66,9 @@ int _tmain(int argc, _TCHAR* argv[])
 		{
 			btnPressed = true; // Entweder zu Beginn einer Datenübertragung kommt ein W (gedrueckt) oder nicht (nicht gedrueckt), zuruecksetzen erfolgt nach Einlesen von Z Daten, moegliche Fehlerquelle!
 		}
-		else if (inByte == 'X') // OBSOLET: +Y: nach links, -Y: nach rechts
+		else if (inByte == 'X') //ist eigentlich y des Sensors
 		{
-
+			// Nur für Debugzwecke (Auslesefreq. d. Sensors)
 			count++;
 			if (count >= 1000 && debug == true)
 			{
@@ -79,20 +79,20 @@ int _tmain(int argc, _TCHAR* argv[])
 				countMillis = now;	
 			}
 
-			if (btnPressed == true) cout << "MAUSTASTE GEDRUECKT!" << endl; // Hier why not und so
+			if (btnPressed == true) cout << "MAUSTASTE GEDRUECKT!" << endl; // Hier wird der Tastendruck erkannt
 
 			x = ReadSerialLongAsChars(SP); // Einlesen der Daten
 			cout << "Received X: " << x << endl;
 
-			Move(x/5000.0, 0, 1);
+			Move(x/5000.0, 0, 1); // Mausbewegung umsetzen
 			
 		}
-		else if (inByte == 'Y') // OBSOLET: +Z: nach oben, -Z: nach unten
+		else if (inByte == 'Y') // ist eigentlich z des Sensors
 		{
 			y = ReadSerialLongAsChars(SP); // Einlesen der Daten
 			cout << "Received Y: " << y << endl;
 
-			Move(0, y/5000.0, 1);
+			Move(0, y/5000.0, 1); // Mausbewegung umsetzen
 
 			btnPressed = false; // Wird hier wieder zurueckgesetzt, da das das letzte einzulesende Datenpaket dieser Uebertragung ist
 		}
@@ -100,7 +100,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	return 0;
 }
 
-float ReadSerialFloat (Serial* SP, char *inByte)
+float ReadSerialFloat (Serial* SP, char *inByte) // OLD - Funktioniert nicht einwandfrei
 {
 	SP->ReadData(inByte,1);  //":" entsorgen
 	char indata[4] = { 0 };
@@ -117,7 +117,7 @@ float ReadSerialFloat (Serial* SP, char *inByte)
 	return g;
 }
 
-float ReadSerialLong (Serial* SP, char *inByte)
+float ReadSerialLong (Serial* SP, char *inByte) // OLD - Funktioniert nicht einwandfrei
 {
 	SP->ReadData(inByte,1);  //":" entsorgen
 	char indata[4] = { 0 };
